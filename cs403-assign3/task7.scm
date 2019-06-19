@@ -1,0 +1,101 @@
+; Task 7
+
+(define (stream-map f s)
+	(cons-stream (f (stream-car s)) (stream-map f (stream-cdr s)))
+	)
+
+(define (sdisplay count s)
+	(define (helper s location)
+		(cond
+			((>= location count)
+				nil
+				)
+			(else
+				(print (stream-car s) ",")
+				(helper (stream-cdr s) (+ location 1))
+				)
+			)
+		)
+	(print "(")
+	(helper s 0)
+	(print "...)")
+	)
+
+(define (eulerTransform s)
+	(define (safe-divide x y)
+		(if (or (= x 0) (= y 0))
+			0
+			(/ x y)
+			)	
+		)
+	(define (stream-ref s n)
+		(if (= n 0)
+			(stream-car s)
+			(stream-ref (stream-cdr s) (- n 1))
+			)
+		)
+	(define s0 (stream-ref s 0))
+	(define s1 (stream-ref s 1))
+	(define s2 (stream-ref s 2))
+	(cons-stream
+		(-  s2
+			(safe-divide (^ (- s2 s1) 2) (+ s0 (* -2 s1) s2))
+			)
+	(eulerTransform (stream-cdr s)))
+	)
+
+(define (mystery x)
+	(define xs (cons-stream x xs))
+	(define (factorial n)
+		(if (<= n 1)
+			1
+			(* n (factorial (- n 1)))
+			)
+		)
+	(define (stream-op op s1 s2)
+		(cons-stream (op (stream-car s1) (stream-car s2)) (stream-op op (stream-cdr s1) (stream-cdr s2)))
+		)
+	(define ones (cons-stream 1 (cons-stream -1 ones)))
+	(define twos (cons-stream 2 twos))
+	(define evens (cons-stream 0.0 (stream-op + twos evens))); NEEDED .0!!
+	(stream-op * (stream-op / (stream-op (lambda (a b) (^ a b )) xs evens) (stream-map factorial evens)) ones)
+	)
+
+(define (ps-mystery x)
+	(define (stream-accum s prev)
+		(cons-stream (+ (stream-car s) prev) (stream-accum (stream-cdr s) (+ (stream-car s) prev)))
+		)
+	(define mys (mystery x))
+	(stream-accum mys 0)
+	)
+
+(define (acc-mystery x)
+	(define psMys (ps-mystery x))
+	(eulerTransform psMys)
+	)
+
+(define (super-mystery x)
+	(define (tableau xf s)
+		(cons-stream s (tableau xf (xf s)))
+		)
+	(define psMys (ps-mystery x))
+	(stream-map stream-car (tableau eulerTransform psMys))
+	)
+
+(define (symbolic-mystery)
+	(println "(mystery x) is $\\cos x$")
+	)
+
+(define (main)
+	(setPort (open (getElement ScamArgs 1) 'read))
+	(define env this)
+	(define (iter expr)
+		(if (not (eof?))
+			(begin
+				(eval expr env)
+				(iter (readExpr))
+				)
+			)
+		)
+	(iter (readExpr))
+	)

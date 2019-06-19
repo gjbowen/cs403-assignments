@@ -1,0 +1,17 @@
+; Task 10i
+(define (ramanujani depth)
+	(define (helper depth value)
+		(if (> depth 0)
+			(helper (- depth 1) (* (+ depth 1) (sqrt (+ (+ 6 depth) value))))
+			(sqrt (+ 6 value))
+			)
+		)
+	(helper depth 0.0)
+	)
+
+(define (main)
+	(setPort (open (getElement ScamArgs 1) 'read))
+	(define arg1 (readExpr))
+	(println "(ramanujani " arg1 ") is " (fmt "%.25f" (ramanujani arg1)))
+	(println "$4$")
+	)
